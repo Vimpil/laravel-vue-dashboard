@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('api_key', 64)->nullable()->unique(); // HMAC-подпись
             $table->rememberToken(); // нужно для Sanctum "remember me"
             $table->timestamps();
+            $table->timestamp('email_verified_at')->nullable();
         });
     }
 

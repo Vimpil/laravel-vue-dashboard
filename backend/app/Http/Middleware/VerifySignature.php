@@ -41,22 +41,17 @@ class VerifySignature
         $expected = hash_hmac('sha256', $payload.$timestamp, $user->api_key);
 
         // Log the payload for debugging
-        \Log::info('Payload: ' . json_encode($payload));
+        Log::info('Payload: ' . json_encode($payload));
+
+        // Log detailed information for debugging signature mismatch
+        Log::info('--- VerifySignature ---', [
+            'payload' => $request->getContent(),
+            'timestamp' => $timestamp,
+            'expected' => hash_hmac('sha256', $request->getContent() . $timestamp, $user->api_key),
+            'signature_received' => $signature,
+        ]);
 
         if (!hash_equals($expected, $signature)) {
-
-            Log::info('VerifySignature middleware started', [
-                'headers' => $request->headers->all(),
-            ]);
-
-            // Log detailed information for debugging signature mismatch
-            \Log::info('--- VerifySignature ---', [
-                'payload' => $request->getContent(),
-                'timestamp' => $timestamp,
-                'expected' => hash_hmac('sha256', $request->getContent() . $timestamp, $user->api_key),
-                'signature_received' => $signature,
-            ]);
-
             return response()->json([
                 'message' => 'Invalid signature',
                 'expected' => $expected,
@@ -65,7 +60,7 @@ class VerifySignature
         }
 
 
-        dd('VerifySignature middleware is running');
+        //dd('VerifySignature middleware is running');
 
         return $next($request);
     }
