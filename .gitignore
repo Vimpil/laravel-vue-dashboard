@@ -1,0 +1,27 @@
+# Laravel specific
+/vendor
+/node_modules
+/public/storage
+/storage/*.key
+.env
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+
+# IDE specific
+.idea
+.vscode
+
+# System specific
+.DS_Store
+Thumbs.db
+
+# Logs
+/storage/logs/*.log
+
+# Cache
+/storage/framework/cache
+/storage/framework/sessions
+/storage/framework/testing
+/storage/framework/views
+
