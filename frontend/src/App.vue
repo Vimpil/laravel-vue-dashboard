@@ -124,8 +124,17 @@ export default {
       } catch (err) {
         console.error("Failed to fetch user data", err);
         if (err.response && err.response.status === 401) {
-          this.logout(); // Logout if token is invalid
+          this.token = null;
+          this.userId = null;
+          this.balance = 0;
+          localStorage.removeItem("token");
+          localStorage.removeItem("userId");
+          alert("Session expired. Please log in again.");
+          return;
         }
+        this.error =
+          (err.response && err.response.data && err.response.data.error) ||
+          "An unexpected error occurred.";
       }
     },
 
