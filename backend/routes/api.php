@@ -7,15 +7,15 @@ use App\Http\Middleware\VerifySignature;
 
 // НЕ добавляем Route::prefix('api') — Laravel уже подставляет /api
 
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+Route::post('/login', [AuthController::class, 'login'])->name('login')->middleware('throttle:login');
+Route::post('/logout', [AuthController::class, 'logout'])->middleware(['auth:sanctum', 'throttle:logout']);
 Route::get('/user', function() {
     return auth()->user();
 })->middleware('auth:sanctum');
 
 // Middleware только для /bets
 Route::post('/bets', [BetController::class, 'store'])
-    ->middleware(VerifySignature::class);
+    ->middleware(['auth:sanctum', 'throttle:bets', VerifySignature::class]);
 
 // Temporary route to test logging
 Route::get('/log-test', function () {
