@@ -26,7 +26,7 @@ class BetController extends Controller
 
         $validated['amount'] = (float)$validated['amount'];
 
-        $user = User::find($request->header('X-User-Id'));
+        $user = $request->user();
 
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
@@ -42,7 +42,7 @@ class BetController extends Controller
         try {
             DB::beginTransaction();
 
-            $user = User::where('id', $request->header('X-User-Id'))->lockForUpdate()->first();
+            $user = User::where('id', $user->id)->lockForUpdate()->first();
             Log::info('User fetched', ['user_id' => $user?->id, 'balance' => $user?->balance]);
 
             if ((float)$user->balance < $validated['amount']) {

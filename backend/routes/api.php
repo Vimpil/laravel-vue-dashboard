@@ -16,6 +16,10 @@ Route::get('/user', function() {
 
 // Middleware только для /bets
 Route::post('/bets', [BetController::class, 'store'])
+    ->middleware(['auth:sanctum', 'throttle:bets']);
+
+// New route for internal bets
+Route::post('/internal-bets', [BetController::class, 'store'])
     ->middleware(['auth:sanctum', 'throttle:bets', VerifySignature::class]);
 
 // Temporary route to test logging

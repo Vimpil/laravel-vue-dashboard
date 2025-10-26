@@ -12,12 +12,15 @@ class VerifySignature
 {
     public function handle(Request $request, Closure $next)
     {
-        $userId = $request->header('X-User-Id');
+        $user = $request->user();
         $signature = $request->header('X-Signature');
-        $timestamp = (int) $request->header('X-Timestamp'); // <-- приведение к int
+        $timestamp = (int) $request->header('X-Timestamp');
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
 
         $missing = [];
-        if (!$userId)    $missing[] = 'X-User-Id';
         if (!$signature) $missing[] = 'X-Signature';
         if (!$timestamp) $missing[] = 'X-Timestamp';
 
@@ -28,9 +31,8 @@ class VerifySignature
             ], 400);
         }
 
-        $user = User::find($userId);
-        if (!$user || !$user->api_key) {
-            return response()->json(['message' => 'Invalid user'], 401);
+        if (!$user->api_key) {
+            return response()->json(['message' => 'API key not found for user'], 401);
         }
 
         // Проверка таймстампа ±5 минут
@@ -55,7 +57,7 @@ class VerifySignature
         if (!hash_equals($expected, $signature)) {
             FraudLog::create([
                 'ip' => $request->ip(),
-                'user_id' => $userId,
+                'user_id' => $user->id,
                 'reason' => 'Invalid signature',
                 'payload' => json_encode([
                     'expected' => $expected,

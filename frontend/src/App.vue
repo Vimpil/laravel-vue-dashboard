@@ -57,7 +57,6 @@
 
 <script>
 import axios from "axios";
-import CryptoJS from "crypto-js";
 
 export default {
   data() {
@@ -68,7 +67,6 @@ export default {
       error: null,
       token: localStorage.getItem("token") || null,
       userId: localStorage.getItem("userId") || null,
-      apiKey: "5FiGKOcgjjMJ6mAGKJZEHzZFROZuBNUsOVAmN5BRuwYuf3pK8RW5IoxButYNXYnb",
       email: "alice@example.com",
       password: "password", // Default values for easier testing
     };
@@ -130,22 +128,13 @@ export default {
         return;
       }
 
-      var payload = JSON.stringify(this.bet);
-      var timestamp = Math.floor(Date.now() / 1000);
-      var idempotency = "idemp-" + Math.random().toString(36).substring(2, 12);
-      var signature = CryptoJS.HmacSHA256(payload + timestamp, this.apiKey).toString(
-          CryptoJS.enc.Hex
-      );
-
       try {
+        const idempotencyKey = `idempotency-key-${Date.now()}-${Math.random()}`;
         await axios.post("http://localhost:8080/api/bets", this.bet, {
           headers: {
             Authorization: "Bearer " + this.token,
             "Content-Type": "application/json",
-            "X-User-Id": this.userId,
-            "X-Timestamp": timestamp,
-            "X-Signature": signature,
-            "Idempotency-Key": idempotency,
+            "Idempotency-Key": idempotencyKey,
           },
         });
         alert("Bet placed successfully!");
@@ -161,8 +150,8 @@ export default {
           return;
         }
         this.error =
-            (err.response && err.response.data && err.response.data.error) ||
-            "An unexpected error occurred.";
+          (err.response && err.response.data && err.response.data.error) ||
+          "An unexpected error occurred.";
       }
     },
 

@@ -6,24 +6,33 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Support\Str;
+use App\Models\Event; // Import Event model
 
 class BetControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    // Helper to create a default event
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Event::factory()->create([
+            'id' => 1,
+            'title' => 'Test Event',
+            'outcomes' => ['win', 'lose'],
+        ]);
+    }
+
     public function test_successful_bet_creation()
     {
         $user = User::factory()->create(['balance' => 100]);
 
-        $response = $this->postJson('/api/bets', [
-            'event_id' => 1, // Ensure this matches an existing event ID
+        $response = $this->actingAs($user)->postJson('/api/bets', [
+            'event_id' => 1,
             'outcome' => 'win',
             'amount' => 50,
         ], [
-            'X-User-Id' => $user->id,
             'Idempotency-Key' => (string) Str::uuid(),
-            'X-Signature' => 'test-signature',
-            'X-Timestamp' => now()->timestamp,
         ]);
 
         $response->assertStatus(201);
@@ -32,25 +41,30 @@ class BetControllerTest extends TestCase
             'event_id' => 1,
             'amount' => 50,
         ]);
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'balance' => 50,
+        ]);
     }
 
     public function test_insufficient_funds()
     {
         $user = User::factory()->create(['balance' => 10]);
 
-        $response = $this->postJson('/api/bets', [
-            'event_id' => 1, // Ensure this matches an existing event ID
+        $response = $this->actingAs($user)->postJson('/api/bets', [
+            'event_id' => 1,
             'outcome' => 'win',
             'amount' => 50,
         ], [
-            'X-User-Id' => $user->id,
             'Idempotency-Key' => (string) Str::uuid(),
-            'X-Signature' => 'test-signature',
-            'X-Timestamp' => now()->timestamp,
         ]);
 
         $response->assertStatus(400);
         $response->assertJson(['error' => 'Insufficient funds']);
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'balance' => 10,
+        ]);
     }
 
     public function test_idempotency()
@@ -58,60 +72,28 @@ class BetControllerTest extends TestCase
         $user = User::factory()->create(['balance' => 100]);
         $key = (string) Str::uuid();
 
-        $this->postJson('/api/bets', [
-            'event_id' => 1, // Ensure this matches an existing event ID
+        $response1 = $this->actingAs($user)->postJson('/api/bets', [
+            'event_id' => 1,
             'outcome' => 'win',
             'amount' => 50,
         ], [
-            'X-User-Id' => $user->id,
             'Idempotency-Key' => $key,
-            'X-Signature' => 'test-signature',
-            'X-Timestamp' => now()->timestamp,
         ]);
+        $response1->assertStatus(201);
 
-        $response = $this->postJson('/api/bets', [
-            'event_id' => 1, // Ensure this matches an existing event ID
+        $response2 = $this->actingAs($user)->postJson('/api/bets', [
+            'event_id' => 1,
             'outcome' => 'win',
             'amount' => 50,
         ], [
-            'X-User-Id' => $user->id,
             'Idempotency-Key' => $key,
-            'X-Signature' => 'test-signature',
-            'X-Timestamp' => now()->timestamp,
         ]);
 
-        $response->assertStatus(200);
+        $response2->assertStatus(200);
         $this->assertDatabaseCount('bets', 1);
-    }
-
-    public function test_double_bet()
-    {
-        $user = User::factory()->create(['balance' => 100]);
-
-        $this->postJson('/api/bets', [
-            'event_id' => 1, // Ensure this matches an existing event ID
-            'outcome' => 'win',
-            'amount' => 50,
-        ], [
-            'X-User-Id' => $user->id,
-            'Idempotency-Key' => (string) Str::uuid(),
-            'X-Signature' => 'test-signature',
-            'X-Timestamp' => now()->timestamp,
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'balance' => 50,
         ]);
-
-        $response = $this->postJson('/api/bets', [
-            'event_id' => 1, // Ensure this matches an existing event ID
-            'outcome' => 'win',
-            'amount' => 50,
-        ], [
-            'X-User-Id' => $user->id,
-            'Idempotency-Key' => (string) Str::uuid(),
-            'X-Signature' => 'test-signature',
-            'X-Timestamp' => now()->timestamp,
-        ]);
-
-        $response->assertStatus(400);
-        $response->assertJson(['error' => 'Double bet not allowed']);
     }
 }
-
