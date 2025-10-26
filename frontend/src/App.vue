@@ -129,7 +129,7 @@ export default {
       }
 
       try {
-        const idempotencyKey = `idempotency-key-${Date.now()}-${Math.random()}`;
+        const idempotencyKey = `idempotency-${Date.now().toString(16)}-${Math.random().toString(16).substring(2, 8)}`;
         await axios.post("http://localhost:8080/api/bets", this.bet, {
           headers: {
             Authorization: "Bearer " + this.token,

@@ -32,7 +32,7 @@ class BetControllerTest extends TestCase
             'outcome' => 'win',
             'amount' => 50,
         ], [
-            'Idempotency-Key' => (string) Str::uuid(),
+            'Idempotency-Key' => substr((string) Str::uuid(), 0, 16),
         ]);
 
         $response->assertStatus(201);
@@ -56,7 +56,7 @@ class BetControllerTest extends TestCase
             'outcome' => 'win',
             'amount' => 50,
         ], [
-            'Idempotency-Key' => (string) Str::uuid(),
+            'Idempotency-Key' => substr((string) Str::uuid(), 0, 16),
         ]);
 
         $response->assertStatus(400);
@@ -70,7 +70,7 @@ class BetControllerTest extends TestCase
     public function test_idempotency()
     {
         $user = User::factory()->create(['balance' => 100]);
-        $key = (string) Str::uuid();
+        $key = substr((string) Str::uuid(), 0, 16);
 
         $response1 = $this->actingAs($user)->postJson('/api/bets', [
             'event_id' => 1,

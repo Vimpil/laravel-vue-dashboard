@@ -29,3 +29,6 @@ Route::get('/log-test', function () {
 });
 
 Route::get('/events', [EventController::class, 'index']);
+
+// Added a route to fetch all bets
+Route::get('/bets', [BetController::class, 'index'])->middleware(['auth:sanctum']);

@@ -11,6 +11,12 @@ use App\Models\Bet;
 
 class BetController extends Controller
 {
+    public function index()
+    {
+        $bets = Bet::all();
+        return response()->json($bets);
+    }
+
     public function store(Request $request)
     {
         Log::info('BetController@store start', [
