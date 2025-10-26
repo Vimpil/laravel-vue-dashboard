@@ -13,11 +13,13 @@ class BetFactory extends Factory
 
     public function definition(): array
     {
+        $user = User::factory()->create(['balance' => 100]); // Ensure sufficient balance
+
         return [
-            'user_id' => User::factory(),
+            'user_id' => $user->id,
             'event_id' => Event::factory(),
             'outcome' => $this->faker->randomElement(['win', 'lose']),
-            'amount' => $this->faker->numberBetween(10, 100),
+            'amount' => $this->faker->numberBetween(10, $user->balance), // Dynamically adjust amount
             'idempotency_key' => $this->faker->uuid(),
             'status' => 'placed',
         ];

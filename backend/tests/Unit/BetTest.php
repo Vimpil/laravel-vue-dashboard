@@ -52,10 +52,16 @@ class BetTest extends TestCase
 
     public function test_fetch_all_bets()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['balance' => 300]); // Ensure sufficient balance for multiple bets
         $this->actingAs($user);
 
-        Bet::factory()->count(3)->create(['user_id' => $user->id]);
+        Bet::factory()->count(3)->create(function () use ($user) {
+            $amount = 50; // Fixed amount for simplicity
+            $user->balance -= $amount;
+            $user->save();
+
+            return ['user_id' => $user->id, 'amount' => $amount];
+        });
 
         $response = $this->getJson('/api/bets');
 
