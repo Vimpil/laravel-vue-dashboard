@@ -50,6 +50,7 @@
         <button type="submit">Place Bet</button>
         <p v-if="error" class="error">{{ error }}</p>
       </form>
+      <button @click="logout" class="logout-button">Logout</button>
     </div>
   </div>
 </template>
@@ -67,9 +68,9 @@ export default {
       error: null,
       token: localStorage.getItem("token") || null,
       userId: localStorage.getItem("userId") || null,
-      apiKey: "ki0KvdvjRrrHO8QODhmr6VQMendoz4YBA24SluLKCPbU5bTEC2WeYhcHdwfJnHJ2",
-      email: "",
-      password: "",
+      apiKey: "5FiGKOcgjjMJ6mAGKJZEHzZFROZuBNUsOVAmN5BRuwYuf3pK8RW5IoxButYNXYnb",
+      email: "alice@example.com",
+      password: "password", // Default values for easier testing
     };
   },
 
@@ -151,12 +152,35 @@ export default {
         this.error = null;
       } catch (err) {
         console.error(err);
-        // ❌ без optional chaining
+        if (err.response && err.response.status === 401) {
+          this.token = null;
+          this.userId = null;
+          localStorage.removeItem("token");
+          localStorage.removeItem("userId");
+          alert("Session expired. Please log in again.");
+          return;
+        }
         this.error =
             (err.response && err.response.data && err.response.data.error) ||
             "An unexpected error occurred.";
       }
     },
+
+    async logout() {
+      try {
+        await axios.post("http://localhost:8080/api/logout", {}, {
+          headers: { Authorization: "Bearer " + this.token },
+        });
+      } catch (err) {
+        console.error("Logout API call failed", err);
+      } finally {
+        this.token = null;
+        this.userId = null;
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        alert("You have been logged out.");
+      }
+    }
   },
 };
 </script>
@@ -184,5 +208,17 @@ button {
 }
 button:hover {
   background-color: #0056b3;
+}
+.logout-button {
+  margin-top: 1em;
+  padding: 0.5em;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.logout-button:hover {
+  background-color: #c82333;
 }
 </style>
