@@ -107,7 +107,11 @@ export default {
         this.fetchEvents();
       } catch (err) {
         console.error(err);
-        this.error = "Login failed";
+        if (err.response && err.response.data.message === "Too many login attempts. Please try again in 1 minute.") {
+          this.error = "Too many login attempts. Please try again in 1 minute.";
+        } else {
+          this.error = "Login failed";
+        }
       }
     },
 
