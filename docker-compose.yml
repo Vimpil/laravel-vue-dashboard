@@ -19,7 +19,7 @@ services:
       DB_DATABASE: bets
       DB_USERNAME: user
       DB_PASSWORD: pass
-      SANCTUM_STATEFUL_DOMAINS: localhost:8080
+      SANCTUM_STATEFUL_DOMAINS: localhost:8081
       SESSION_DOMAIN: localhost
       SESSION_DRIVER: cookie
     depends_on:
@@ -52,6 +52,18 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./frontend:/app
     networks:
       - app-network
 
