@@ -1,94 +1,119 @@
 <template>
   <div id="app">
     <h1>Place Your Bet</h1>
-    <form @submit.prevent="submitBet">
-      <div>
-        <label for="event">Event:</label>
-        <select v-model="bet.event_id" id="event" required>
-          <option v-for="event in events" :key="event.id" :value="event.id">
-            {{ event.title }}
-          </option>
-        </select>
-      </div>
 
-      <div>
-        <label for="outcome">Outcome:</label>
-        <select v-model="bet.outcome" id="outcome" required>
-          <option v-for="o in availableOutcomes" :key="o" :value="o">
-            {{ o }}
-          </option>
-        </select>
-      </div>
+    <!-- 🔐 Login form -->
+    <div v-if="!token">
+      <h2>Login</h2>
+      <form @submit.prevent="login">
+        <input v-model="email" placeholder="Email" required />
+        <input v-model="password" type="password" placeholder="Password" required />
+        <button type="submit">Login</button>
+        <p v-if="error" class="error">{{ error }}</p>
+      </form>
+      <hr />
+    </div>
 
-      <div>
-        <label for="amount">Amount:</label>
-        <input
-          type="number"
-          id="amount"
-          v-model.number="bet.amount"
-          min="1"
-          :max="balance"
-          required
-        />
-      </div>
+    <!-- 🎲 Betting form -->
+    <div v-else>
+      <form @submit.prevent="submitBet">
+        <div>
+          <label for="event">Event:</label>
+          <select v-model="bet.event_id" id="event" required>
+            <option v-for="event in events" :key="event.id" :value="event.id">
+              {{ event.title }}
+            </option>
+          </select>
+        </div>
 
-      <button type="submit">Place Bet</button>
+        <div>
+          <label for="outcome">Outcome:</label>
+          <select v-model="bet.outcome" id="outcome" required>
+            <option v-for="o in availableOutcomes" :key="o" :value="o">
+              {{ o }}
+            </option>
+          </select>
+        </div>
 
-      <p v-if="error" class="error">{{ error }}</p>
-    </form>
+        <div>
+          <label for="amount">Amount:</label>
+          <input
+              type="number"
+              id="amount"
+              v-model.number="bet.amount"
+              min="1"
+              :max="balance"
+              required
+          />
+        </div>
+
+        <button type="submit">Place Bet</button>
+        <p v-if="error" class="error">{{ error }}</p>
+      </form>
+    </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import CryptoJS from "crypto-js";
 
 export default {
   data() {
     return {
       events: [],
-      bet: {
-        event_id: null,
-        outcome: null,
-        amount: 1,
-      },
-      balance: 100, // Example balance, replace with actual user balance
+      bet: { event_id: null, outcome: null, amount: 1 },
+      balance: 100,
       error: null,
+      token: localStorage.getItem("token") || null,
+      userId: localStorage.getItem("userId") || null,
+      apiKey: "ki0KvdvjRrrHO8QODhmr6VQMendoz4YBA24SluLKCPbU5bTEC2WeYhcHdwfJnHJ2",
+      email: "",
+      password: "",
     };
   },
+
   computed: {
     selectedEvent() {
-      return this.events.find((e) => e.id === this.bet.event_id) || null;
+      return this.events.find(function(e) {
+        return e.id === this.bet.event_id;
+      }.bind(this)) || null;
     },
     availableOutcomes() {
-      return this.selectedEvent && Array.isArray(this.selectedEvent.outcomes)
-        ? this.selectedEvent.outcomes
-        : [];
+      var se = this.selectedEvent;
+      return se && se.outcomes ? se.outcomes : [];
     },
   },
-  watch: {
-    // When event changes, ensure outcome is valid
-    selectedEvent: {
-      immediate: true,
-      handler(ev) {
-        if (!ev) {
-          this.bet.outcome = null;
-          return;
-        }
-        if (!this.availableOutcomes.includes(this.bet.outcome)) {
-          this.bet.outcome = this.availableOutcomes[0] || null;
-        }
-      },
-    },
-  },
+
   created() {
-    this.fetchEvents();
+    if (this.token) this.fetchEvents();
   },
+
   methods: {
+    async login() {
+      try {
+        var res = await axios.post("http://localhost:8080/api/login", {
+          email: this.email,
+          password: this.password,
+        });
+        this.token = res.data.token;
+        this.userId = (res.data.user && res.data.user.id) || 7;
+        localStorage.setItem("token", this.token);
+        localStorage.setItem("userId", this.userId);
+        this.error = null;
+        this.fetchEvents();
+      } catch (err) {
+        console.error(err);
+        this.error = "Login failed";
+      }
+    },
+
     async fetchEvents() {
       try {
-        const response = await axios.get("/api/events");
-        this.events = response.data;
-        // Set default selection if not set
+        var res = await axios.get("http://localhost:8080/api/events", {
+          headers: { Authorization: "Bearer " + this.token },
+        });
+        this.events = res.data;
         if (!this.bet.event_id && this.events.length) {
           this.bet.event_id = this.events[0].id;
         }
@@ -97,26 +122,39 @@ export default {
         this.error = "Failed to load events.";
       }
     },
+
     async submitBet() {
-      if (this.bet.amount <= 0 || this.bet.amount > this.balance) {
-        this.error = "Invalid amount. Ensure it is greater than 0 and within your balance.";
-        return;
-      }
       if (!this.bet.event_id || !this.bet.outcome) {
         this.error = "Please select an event and outcome.";
         return;
       }
 
+      var payload = JSON.stringify(this.bet);
+      var timestamp = Math.floor(Date.now() / 1000);
+      var idempotency = "idemp-" + Math.random().toString(36).substring(2, 12);
+      var signature = CryptoJS.HmacSHA256(payload + timestamp, this.apiKey).toString(
+          CryptoJS.enc.Hex
+      );
+
       try {
-        await axios.post("/api/bets", this.bet);
+        await axios.post("http://localhost:8080/api/bets", this.bet, {
+          headers: {
+            Authorization: "Bearer " + this.token,
+            "Content-Type": "application/json",
+            "X-User-Id": this.userId,
+            "X-Timestamp": timestamp,
+            "X-Signature": signature,
+            "Idempotency-Key": idempotency,
+          },
+        });
         alert("Bet placed successfully!");
         this.error = null;
       } catch (err) {
-        if (err.response && err.response.data && err.response.data.error) {
-          this.error = err.response.data.error;
-        } else {
-          this.error = "An unexpected error occurred.";
-        }
+        console.error(err);
+        // ❌ без optional chaining
+        this.error =
+            (err.response && err.response.data && err.response.data.error) ||
+            "An unexpected error occurred.";
       }
     },
   },

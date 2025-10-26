@@ -1,20 +1,24 @@
-# Use an official Node.js runtime as a parent image
+# Используем официальный Node.js образ
 FROM node:16
 
-# Set the working directory in the container
+# Рабочая директория внутри контейнера
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Копируем package.json и package-lock.json
 COPY package*.json ./
 
-# Install dependencies
+# Устанавливаем зависимости (включая crypto-js, если он в package.json)
 RUN npm install
 
-# Copy the rest of the application code
+# Копируем остальной код
 COPY . .
 
-# Expose the port the app runs on
+# Устанавливаем переменную окружения для Vue dev-server
+ENV HOST 0.0.0.0
+ENV PORT 8081
+
+# Пробрасываем порт dev-сервера
 EXPOSE 8081
 
-# Command to run the application
-CMD ["npm", "run", "serve"]
+# Команда запуска dev-сервера Vue
+CMD ["npm", "run", "serve", "--", "--port", "8081", "--host", "0.0.0.0"]
