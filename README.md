@@ -37,7 +37,7 @@ The goal of this project is to implement a simple betting service with a focus o
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/your-username/betting-mini-service.git
+    git clone https://github.com/Vimpil/laravel-vue-dashboard.git
     cd betting-mini-service
     ```
 
