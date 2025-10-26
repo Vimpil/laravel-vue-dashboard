@@ -160,18 +160,18 @@ export default {
         this.error = null;
       } catch (err) {
         console.error(err);
-        if (err.response && err.response.status === 401) {
-          this.token = null;
-          this.userId = null;
-          this.balance = 0;
-          localStorage.removeItem("token");
-          localStorage.removeItem("userId");
-          alert("Session expired. Please log in again.");
-          return;
+        if (err.response) {
+          const serverMessage = err.response.data.message;
+          if (serverMessage === "Insufficient funds") {
+            this.error = "You do not have enough funds to place this bet.";
+          } else if (serverMessage === "Too many requests") {
+            this.error = "You are making requests too frequently. Please try again later.";
+          } else {
+            this.error = serverMessage || "An unexpected error occurred.";
+          }
+        } else {
+          this.error = "Failed to connect to the server. Please try again later.";
         }
-        this.error =
-          (err.response && err.response.data && err.response.data.error) ||
-          "An unexpected error occurred.";
       }
     },
 
