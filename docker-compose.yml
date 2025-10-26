@@ -22,6 +22,13 @@ services:
       SANCTUM_STATEFUL_DOMAINS: localhost:8081
       SESSION_DOMAIN: localhost
       SESSION_DRIVER: cookie
+    env_file:
+      - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       - db
     networks:
@@ -39,6 +46,8 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+    env_file:
+      - .env
     networks:
       - app-network
 
