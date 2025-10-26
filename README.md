@@ -46,6 +46,7 @@ The goal of this project is to implement a simple betting service with a focus o
     DOCKER_BUILDKIT=1
     COMPOSE_DOCKER_CLI_BUILD=1
     ```
+    For simplicity, some `.env` files have been added to this project to facilitate the build process. However, in a real-world project, these files should be included in `.gitignore` to avoid exposing sensitive information.
 
 3.  Build and run the application using Docker Compose:
     ```bash
