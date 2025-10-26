@@ -121,4 +121,6 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
+
+    'internal_bets_secret' => env('INTERNAL_BETS_SECRET', 'default-secret'),
 ];
