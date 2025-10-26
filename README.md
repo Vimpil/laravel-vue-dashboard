@@ -52,6 +52,12 @@ The goal of this project is to implement a simple betting service with a focus o
     docker-compose up --build
     ```
 
+4.  After the application is running, execute the database migrations and seeders to populate the database with initial data:
+    ```bash
+    docker-compose exec app php artisan migrate
+    docker-compose exec app php artisan db:seed
+    ```
+
 The application will be available at the following URLs:
 - **Backend API**: `http://localhost:8080`
 - **Frontend (Vue.js)**: `http://localhost:8081`
@@ -99,4 +105,3 @@ docker-compose exec app php artisan migrate
 # Run database seeders
 docker-compose exec app php artisan db:seed
 ```
-
