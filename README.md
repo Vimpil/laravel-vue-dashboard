@@ -37,11 +37,17 @@ The goal of this project is to implement a simple betting service with a focus o
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/Vimpil/laravel-vue-dashboard.git
+    git clone https://github.com/your-username/betting-mini-service.git
     cd betting-mini-service
     ```
 
-2.  Build and run the application using Docker Compose:
+2.  Create a `.env` file in the root directory of the project and add the following lines:
+    ```
+    DOCKER_BUILDKIT=1
+    COMPOSE_DOCKER_CLI_BUILD=1
+    ```
+
+3.  Build and run the application using Docker Compose:
     ```bash
     docker-compose up --build
     ```

@@ -85,7 +85,10 @@ export default {
   },
 
   created() {
-    if (this.token) this.fetchEvents();
+    if (this.token) {
+      this.fetchUserData();
+      this.fetchEvents();
+    }
   },
 
   methods: {
@@ -97,6 +100,7 @@ export default {
         });
         this.token = res.data.token;
         this.userId = (res.data.user && res.data.user.id) || 7;
+        this.balance = (res.data.user && res.data.user.balance);
         localStorage.setItem("token", this.token);
         localStorage.setItem("userId", this.userId);
         this.error = null;
@@ -104,6 +108,20 @@ export default {
       } catch (err) {
         console.error(err);
         this.error = "Login failed";
+      }
+    },
+
+    async fetchUserData() {
+      try {
+        const response = await axios.get("http://localhost:8080/api/user", {
+          headers: { Authorization: "Bearer " + this.token },
+        });
+        this.balance = response.data.balance;
+      } catch (err) {
+        console.error("Failed to fetch user data", err);
+        if (err.response && err.response.status === 401) {
+          this.logout(); // Logout if token is invalid
+        }
       }
     },
 
@@ -138,12 +156,14 @@ export default {
           },
         });
         alert("Bet placed successfully!");
+        this.fetchUserData(); // Refresh balance after betting
         this.error = null;
       } catch (err) {
         console.error(err);
         if (err.response && err.response.status === 401) {
           this.token = null;
           this.userId = null;
+          this.balance = 0;
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
           alert("Session expired. Please log in again.");
@@ -165,6 +185,7 @@ export default {
       } finally {
         this.token = null;
         this.userId = null;
+        this.balance = 0;
         localStorage.removeItem("token");
         localStorage.removeItem("userId");
         alert("You have been logged out.");
@@ -297,4 +318,3 @@ hr {
   }
 }
 </style>
-
