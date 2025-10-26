@@ -46,8 +46,20 @@ class BetController extends Controller
             Log::info('User fetched', ['user_id' => $user?->id, 'balance' => $user?->balance]);
 
             if ((float)$user->balance < $validated['amount']) {
+                // Log fraud attempt outside of transaction to ensure it is not rolled back
+                DB::commit(); // Commit any open transaction to avoid nested transaction issues
+
+                \App\Models\FraudLog::create([
+                    'ip' => $request->ip(),
+                    'user_id' => $user->id,
+                    'reason' => 'Insufficient funds',
+                    'payload' => json_encode([
+                        'balance' => $user->balance,
+                        'attempted_amount' => $validated['amount'],
+                    ]),
+                ]);
+
                 Log::info('Insufficient funds', ['balance' => $user->balance, 'amount' => $validated['amount']]);
-                DB::rollBack();
                 return response()->json(['error' => 'Insufficient funds'], 400);
             }
 

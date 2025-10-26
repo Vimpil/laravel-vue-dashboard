@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\FraudLog;
 use Illuminate\Support\Facades\Log;
 
 class VerifySignature
@@ -52,6 +53,16 @@ class VerifySignature
         ]);
 
         if (!hash_equals($expected, $signature)) {
+            FraudLog::create([
+                'ip' => $request->ip(),
+                'user_id' => $userId,
+                'reason' => 'Invalid signature',
+                'payload' => json_encode([
+                    'expected' => $expected,
+                    'received' => $signature,
+                ]),
+            ]);
+
             return response()->json([
                 'message' => 'Invalid signature',
                 'expected' => $expected,
