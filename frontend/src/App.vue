@@ -174,40 +174,127 @@ export default {
 };
 </script>
 
-<style>
-.error {
-  color: red;
+<style scoped>
+/* 🎨 Общие стили */
+body {
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+  margin: 0;
+  padding: 0;
 }
+
+#app {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+h1 {
+  text-align: center;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+h2 {
+  color: #1e293b;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* 📋 Формы */
 form {
-  max-width: 400px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
 }
+
 form div {
-  margin-bottom: 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
+
+/* 🧾 Поля ввода */
+input,
+select {
+  padding: 0.6em 0.75em;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  outline: none;
+}
+
+/* 🔘 Кнопки */
 button {
-  padding: 0.5em;
-  background-color: #007bff;
-  color: white;
+  padding: 0.7em 1em;
+  font-size: 1rem;
+  font-weight: 500;
+  background-color: #2563eb;
+  color: #ffffff;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
 }
+
 button:hover {
-  background-color: #0056b3;
+  background-color: #1d4ed8;
 }
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* 🚪 Кнопка Logout */
 .logout-button {
-  margin-top: 1em;
-  padding: 0.5em;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  background-color: #ef4444;
+  margin-top: 1.5rem;
 }
+
 .logout-button:hover {
-  background-color: #c82333;
+  background-color: #dc2626;
+}
+
+/* ⚠️ Ошибки */
+.error {
+  color: #dc2626;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* 🧩 Разделитель */
+hr {
+  margin: 2rem 0;
+  border: 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* 📱 Адаптивность */
+@media (max-width: 480px) {
+  #app {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  button {
+    font-size: 0.95rem;
+  }
 }
 </style>
+
