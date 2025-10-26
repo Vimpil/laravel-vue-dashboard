@@ -12,14 +12,11 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Устанавливаем рабочую директорию
 WORKDIR /var/www/html
 
-# Копируем только файлы Composer, чтобы использовать кэш Docker
-COPY composer.json composer.lock ./
+# Копируем весь проект в контейнер
+COPY . .
 
 # Устанавливаем зависимости
 RUN composer install --no-dev --optimize-autoloader
-
-# Копируем весь проект
-COPY . .
 
 # Создаём нужные папки для storage и bootstrap/cache
 RUN mkdir -p storage/framework/{cache,views,sessions} \
