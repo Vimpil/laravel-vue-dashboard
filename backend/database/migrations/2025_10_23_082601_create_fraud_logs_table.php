@@ -18,6 +18,8 @@ return new class extends Migration
         $table->string('reason');
         $table->json('payload')->nullable();
         $table->timestamps();
+
+        $table->index('ip'); // Index for faster searches by IP
     });
 }
 

@@ -16,6 +16,7 @@ return new class extends Migration
         $table->string('title');
         $table->json('outcomes'); // ["home","draw","away"]
         $table->timestamps();
+        $table->index('title'); // Add index for faster searches by title
     });
 }
 

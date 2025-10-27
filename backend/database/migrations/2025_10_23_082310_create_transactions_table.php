@@ -20,6 +20,9 @@ public function up(): void
         $table->string('reference_type')->nullable(); // Например: 'bet'
         $table->json('meta')->nullable();
         $table->timestamps();
+
+        $table->index('user_id'); // Index for user-based queries
+        $table->index(['reference_id', 'reference_type']); // Composite index for polymorphic relationships
     });
 }
 

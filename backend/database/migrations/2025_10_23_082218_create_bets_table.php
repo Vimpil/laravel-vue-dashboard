@@ -20,6 +20,9 @@ return new class extends Migration
         $table->enum('status', ['placed','won','lost'])->default('placed');
         $table->string('idempotency_key')->nullable()->unique();
         $table->timestamps();
+
+        $table->index(['user_id', 'event_id']); // Composite index for user-event queries
+        $table->index('status'); // Index for faster status filtering
     });
 }
 

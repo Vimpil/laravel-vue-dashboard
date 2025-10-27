@@ -21,6 +21,7 @@ return new class extends Migration
             $table->rememberToken(); // нужно для Sanctum "remember me"
             $table->timestamps();
             $table->timestamp('email_verified_at')->nullable();
+            $table->index('api_key'); // Add index for faster lookups
         });
     }
 
